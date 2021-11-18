@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_18_090524) do
+ActiveRecord::Schema.define(version: 2021_11_18_091306) do
 
   create_table "oauth_access_grants", force: :cascade do |t|
     t.integer "resource_owner_id", null: false
@@ -61,6 +61,13 @@ ActiveRecord::Schema.define(version: 2021_11_18_090524) do
     t.string "otp_secret_key", null: false
     t.boolean "active", default: false
     t.index ["owner_id"], name: "index_otp_secrets_on_owner_id", unique: true
+  end
+
+  create_table "things", force: :cascade do |t|
+    t.string "name"
+    t.text "text"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "users", force: :cascade do |t|
