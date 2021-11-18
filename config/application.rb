@@ -21,6 +21,8 @@ Bundler.require(*Rails.groups)
 
 module DemoApp
   class Application < Rails::Application
+    config.jwt_encryption_method = :hs512
+    config.middleware.use LinkedRails::Middleware::LinkedDataParams
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.1
 
