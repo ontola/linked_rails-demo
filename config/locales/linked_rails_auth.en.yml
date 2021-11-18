@@ -1,0 +1,63 @@
+en:
+  actions:
+    access_tokens:
+      create:
+        label: "Sign in"
+        submit: "Send"
+    confirmations:
+      create:
+        label: "Send confirmation link again"
+        submit: "Send"
+      update:
+        label: "Confirm email address"
+        submit: "Confirm"
+    otp_attempts:
+      create:
+        label: 'Two factor authentication'
+        submit: "Continue"
+    otp_secrets:
+      create:
+        label: 'Two factor authentication'
+        submit: "Continue"
+      destroy:
+        label: 'Disable two factor authentication'
+        description: "Are you sure you want to disable the two factor authentication of **%{name}**?"
+        submit: "Confirm"
+        success: "Two factor authentication is disabled"
+      errors:
+        invalid: "The authentication code is incorrect."
+        not_activated: "Two factor authentication is not yet activated."
+        already_exists: "Two factor authentication is already activated."
+        create:
+          success: "Welcome back!"
+        expired: "The request expired. Please try logging in again."
+    passwords:
+      create:
+        label: 'Send password reset link'
+        submit: "Send"
+    registrations:
+      create:
+        label: 'Register'
+        submit: "Continue"
+    sessions:
+      create:
+        label: 'Sign in or register'
+        submit: "Continue"
+  devise:
+    failure:
+      invalid_email: 'We couldn''t find a user with this email.'
+      invalid_password: 'Invalid password.'
+  forms:
+    access_tokens:
+      email:
+        label: "Email"
+    otp_attempts:
+      helper_text: 'You can find this in the authentication-application you used earlier.'
+      label: "Authentication code"
+    otp_secrets:
+      provision_image:
+        description: 'Install a authentication-application and scan this QR code.'
+    sessions:
+      email:
+        label: "Email"
+

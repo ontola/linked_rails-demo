@@ -4,13 +4,33 @@ Doorkeeper.configure do
   # Change the ORM that doorkeeper will use (requires ORM extensions installed).
   # Check the list of supported ORMs here: https://github.com/doorkeeper-gem/doorkeeper#orms
   orm :active_record
+  api_only
+  base_controller 'ApplicationController'
+  base_metal_controller 'ApplicationController'
 
   # This block will be called to check whether the resource owner is authenticated or not.
   resource_owner_authenticator do
-    raise "Please configure doorkeeper resource_owner_authenticator block located in #{__FILE__}"
-    # Put your resource owner authentication logic here.
-    # Example implementation:
-    #   User.find_by(id: session[:user_id]) || redirect_to(new_user_session_url)
+    if doorkeeper_token&.acceptable?('user')
+      User.find_by(id: doorkeeper_token.resource_owner_id)
+    elsif doorkeeper_token&.acceptable?('guest') && doorkeeper_token_payload['user']
+      LinkedRails.guest_user_class.new(id: doorkeeper_token.resource_owner_id)
+    end
+  end
+
+  resource_owner_from_credentials do
+    request.params[:user] = request.params[:access_token] || {}
+    request.params[:user][:email] ||= (request.params[:username] || request.params[:email])&.downcase
+    request.params[:user][:password] ||= request.params[:token] || request.params[:password]
+    request.env['devise.allow_params_authentication'] = true
+    user =
+      if request.params[:scope] == 'guest'
+        LinkedRails.guest_user_class.new
+      else
+        request.env['warden'].authenticate(scope: :user, store: false)
+      end
+    raise_login_error(request) if user.blank?
+    request.env['warden'].logout
+    user
   end
 
   # If you didn't skip applications controller from Doorkeeper routes in your application routes.rb
@@ -115,7 +135,7 @@ Doorkeeper.configure do
   # Use a custom class for generating the access token.
   # See https://doorkeeper.gitbook.io/guides/configuration/other-configurations#custom-access-token-generator
   #
-  # access_token_generator '::Doorkeeper::JWT'
+  access_token_generator '::Doorkeeper::JWT'
 
   # The controller +Doorkeeper::ApplicationController+ inherits from.
   # Defaults to +ActionController::Base+ unless +api_only+ is set, which changes the default to
@@ -215,7 +235,7 @@ Doorkeeper.configure do
   # `grant_type` - the grant type of the request (see Doorkeeper::OAuth)
   # `scopes` - the requested scopes (see Doorkeeper::OAuth::Scopes)
   #
-  # use_refresh_token
+  use_refresh_token
 
   # Provide support for an owner to be assigned to each registered application (disabled by default)
   # Optional parameter confirmation: true (default: false) if you want to enforce ownership of
@@ -229,8 +249,8 @@ Doorkeeper.configure do
   # For more information go to
   # https://doorkeeper.gitbook.io/guides/ruby-on-rails/scopes
   #
-  # default_scopes  :public
-  # optional_scopes :write, :update
+  default_scopes :guest
+  optional_scopes :user
 
   # Allows to restrict only certain scopes for grant_type.
   # By default, all the scopes will be available for all the grant types.
@@ -346,7 +366,7 @@ Doorkeeper.configure do
   #   http://tools.ietf.org/html/rfc6819#section-4.4.2
   #   http://tools.ietf.org/html/rfc6819#section-4.4.3
   #
-  # grant_flows %w[authorization_code client_credentials]
+  grant_flows %w[client_credentials authorization_code password]
 
   # Allows to customize OAuth grant flows that +each+ application support.
   # You can configure a custom block (or use a class respond to `#call`) that must

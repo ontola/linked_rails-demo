@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  use_linked_rails_auth
   use_linked_rails
   find_tenant_route
   use_doorkeeper
